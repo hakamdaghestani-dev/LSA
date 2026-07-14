@@ -913,69 +913,6 @@ body{
   flex-direction:column;
   gap:8px;
 }
-#search-box{
-  position:relative;
-}
-#search-input{
-  width:100%;
-  background:var(--asphalt-850);
-  border:1px solid var(--line);
-  border-radius:7px;
-  padding:8px 62px 8px 32px;
-  color:var(--text);
-  font-size:13px;
-  font-family:var(--font-body);
-}
-#search-input:focus{ outline:none; border-color:var(--taxi-red); }
-@media (max-width:760px){
-  /* iOS/Android auto-zoom the viewport when a focused input's font-size is
-     below 16px - bump it up only on small screens to prevent that jump,
-     without changing the desktop look. */
-  #search-input{ font-size:16px; }
-}
-#search-box svg{
-  position:absolute; left:9px; top:50%; transform:translateY(-50%);
-  color:var(--text-mute);
-  pointer-events:none;
-}
-#keyboard-toggle-btn{
-  position:absolute;
-  right:30px;
-  top:50%;
-  transform:translateY(-50%);
-  min-width:26px;
-  height:20px;
-  padding:0 5px;
-  border-radius:5px;
-  background:var(--asphalt-800);
-  border:1px solid var(--line);
-  color:var(--text-mute);
-  font-size:9.5px;
-  font-weight:700;
-  font-family:var(--font-body);
-  letter-spacing:0.3px;
-  cursor:pointer;
-}
-#keyboard-toggle-btn:hover{ color:var(--text); border-color:var(--asphalt-600); }
-#search-clear-btn{
-  position:absolute;
-  right:6px;
-  top:50%;
-  transform:translateY(-50%);
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  background:none;
-  border:none;
-  color:var(--text-mute);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-}
-#search-clear-btn svg{ position:static; transform:none; pointer-events:none; }
-#search-clear-btn:hover{ color:var(--taxi-red); background:var(--asphalt-800); }
-#search-clear-btn.show{ display:flex; }
 .filter-row{ display:flex; gap:8px; }
 .filter-row select{
   flex:1;
@@ -1047,6 +984,117 @@ body{
   font-family:inherit;
 }
 .ms-clear:hover{ color:var(--taxi-red); }
+
+/* ---------- Address search (floating over the map) ---------- */
+#map-search-stack{
+  position:absolute;
+  top:18px;
+  right:18px;
+  width:280px;
+  max-width:calc(100% - 36px);
+  z-index:650;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+@media (max-width:600px){
+  #map-search-stack{ top:66px; right:12px; left:12px; width:auto; max-width:none; }
+}
+#lsa-search, #address-search{ width:100%; }
+.map-search-box{
+  position:relative;
+  background:rgba(26,30,34,0.95);
+  border:1px solid var(--line);
+  border-radius:9px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.45);
+  backdrop-filter:blur(4px);
+}
+.map-search-box svg:first-child{
+  position:absolute; left:10px; top:50%; transform:translateY(-50%);
+  color:var(--text-mute);
+  pointer-events:none;
+}
+.map-search-box input{
+  width:100%;
+  background:transparent;
+  border:none;
+  border-radius:9px;
+  padding:10px 30px 10px 32px;
+  color:var(--text);
+  font-size:13px;
+  font-family:var(--font-body);
+}
+.map-search-box input:focus{ outline:none; }
+@media (max-width:760px){
+  .map-search-box input{ font-size:16px; }
+}
+#lsa-search-box{ padding-right:26px; } /* room for the ABC/123 keyboard toggle */
+#keyboard-toggle-btn{
+  position:absolute;
+  right:30px;
+  top:50%;
+  transform:translateY(-50%);
+  min-width:26px;
+  height:20px;
+  padding:0 5px;
+  border-radius:5px;
+  background:var(--asphalt-800);
+  border:1px solid var(--line);
+  color:var(--text-mute);
+  font-size:9.5px;
+  font-weight:700;
+  font-family:var(--font-body);
+  letter-spacing:0.3px;
+  cursor:pointer;
+}
+#keyboard-toggle-btn:hover{ color:var(--text); border-color:var(--asphalt-600); }
+#search-clear-btn, #address-search-clear{
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:none;
+  border:none;
+  color:var(--text-mute);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+#search-clear-btn.show, #address-search-clear.show{ display:flex; }
+#search-clear-btn svg, #address-search-clear svg{ position:static; transform:none; pointer-events:none; }
+#search-clear-btn:hover, #address-search-clear:hover{ color:var(--taxi-red); background:var(--asphalt-800); }
+#lsa-suggestions, #address-suggestions{
+  display:none;
+  margin-top:6px;
+  background:rgba(26,30,34,0.97);
+  border:1px solid var(--line);
+  border-radius:9px;
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  max-height:260px;
+  overflow-y:auto;
+}
+#lsa-suggestions.show, #address-suggestions.show{ display:block; }
+.addr-item{
+  padding:9px 12px;
+  font-size:12.5px;
+  color:var(--text-dim);
+  cursor:pointer;
+  border-bottom:1px solid var(--line);
+  line-height:1.4;
+}
+.addr-item:last-child{ border-bottom:none; }
+.addr-item:hover{ background:var(--asphalt-850); color:var(--text); }
+.addr-item .addr-main{ color:var(--text); font-weight:600; }
+.addr-empty, .addr-loading{
+  padding:10px 12px;
+  font-size:12px;
+  color:var(--text-mute);
+}
 
 /* ---------- Marker icon (divIcon with letter) ---------- */
 .lsa-marker-icon{
@@ -1367,18 +1415,6 @@ body.sidebar-collapsed #sidebar{ display:none; }
     </div>
 
     <div id="filters">
-      <div id="search-box">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
-        </svg>
-        <input type="text" id="search-input" inputmode="numeric" pattern="[0-9]*" placeholder="LSA-Nr., Kreuzung oder Bemerkung suchen…">
-        <button id="keyboard-toggle-btn" type="button" title="Zur normalen Tastatur wechseln">ABC</button>
-        <button id="search-clear-btn" aria-label="Suche löschen" title="Suche löschen">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
       <div class="filter-row">
         <select id="filter-hersteller"><option value="">Alle Hersteller</option></select>
         <div class="multiselect" id="filter-geraet-wrap">
@@ -1404,6 +1440,23 @@ body.sidebar-collapsed #sidebar{ display:none; }
 
   <div id="map-col">
     <div id="map"></div>
+    <div id="map-search-stack">
+      <div id="lsa-search">
+        <div id="lsa-search-box" class="map-search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+          </svg>
+          <input type="text" id="search-input" inputmode="numeric" pattern="[0-9]*" placeholder="LSA-Nr., Kreuzung oder Bemerkung…">
+          <button id="keyboard-toggle-btn" type="button" title="Zur normalen Tastatur wechseln">ABC</button>
+          <button id="search-clear-btn" aria-label="Suche löschen" title="Suche löschen">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div id="lsa-suggestions"></div>
+      </div>
+    </div>
     <div id="legend" style="display:none;">
       <div class="leg-title">Hersteller</div>
       <div class="leg-row"><span class="leg-dot" style="background:#3f7fc1"></span>Swarco / Dambach</div>
@@ -1484,7 +1537,7 @@ function useTileProvider(index){
 }
 
 function initMap(){
-  map = L.map('map', {zoomControl:true, attributionControl:true}).setView([52.3759, 9.7320], 12);
+  map = L.map('map', {zoomControl:false, attributionControl:true}).setView([52.3759, 9.7320], 12);
   useTileProvider(0);
   markerLayer = L.layerGroup().addTo(map);
   map.on('zoomend', scheduleMarkerZoomUpdate);
@@ -1681,6 +1734,45 @@ function applyFilters(){
   renderList();
   renderMarkers();
   renderStats();
+  renderLsaSuggestions(q);
+}
+
+function renderLsaSuggestions(q){
+  var box = document.getElementById('lsa-suggestions');
+  if (!q){
+    box.classList.remove('show');
+    box.innerHTML = '';
+    return;
+  }
+  box.innerHTML = '';
+  if (!state.filtered.length){
+    box.innerHTML = '<div class="addr-empty">Keine Treffer gefunden.</div>';
+    box.classList.add('show');
+    return;
+  }
+  state.filtered.slice(0, 8).forEach(function(f){
+    var item = document.createElement('div');
+    item.className = 'addr-item';
+    var no = getNo(f.props);
+    item.innerHTML = '<span class="addr-main"></span>';
+    item.querySelector('.addr-main').textContent = (no !== undefined && no !== null ? ('#' + no + ' — ') : '') + getKreuzung(f.props);
+    var bez = getBezirk(f.props);
+    if (bez !== undefined && bez !== null && bez !== ''){
+      item.appendChild(document.createTextNode(' — Bez. ' + bez));
+    }
+    item.addEventListener('click', function(){
+      focusFeature(f.id);
+      box.classList.remove('show');
+    });
+    box.appendChild(item);
+  });
+  if (state.filtered.length > 8){
+    var more = document.createElement('div');
+    more.className = 'addr-empty';
+    more.textContent = '+ ' + (state.filtered.length - 8) + ' weitere Treffer';
+    box.appendChild(more);
+  }
+  box.classList.add('show');
 }
 
 function renderStats(){
@@ -2128,6 +2220,16 @@ function init(){
   });
   document.getElementById('filter-hersteller').addEventListener('change', applyFilters);
   document.getElementById('filter-sb').addEventListener('change', applyFilters);
+
+  document.getElementById('search-input').addEventListener('focus', function(){
+    var box = document.getElementById('lsa-suggestions');
+    if (box.innerHTML.trim()) box.classList.add('show');
+  });
+  document.addEventListener('click', function(e){
+    if (!document.getElementById('lsa-search').contains(e.target)){
+      document.getElementById('lsa-suggestions').classList.remove('show');
+    }
+  });
 
   var geraetWrap = document.getElementById('filter-geraet-wrap');
   var geraetBtn = document.getElementById('filter-geraet-btn');
