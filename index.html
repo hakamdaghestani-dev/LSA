@@ -775,6 +775,34 @@ body{
   border-bottom:1px solid var(--line);
   flex-shrink:0;
 }
+#data-source-indicator{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  background:var(--asphalt-850);
+  border:1px solid var(--line);
+  border-radius:7px;
+  padding:8px 10px;
+  margin-bottom:12px;
+}
+.ds-label{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--text-mute);
+  font-weight:700;
+}
+#data-source-name{
+  font-size:12px;
+  font-family:var(--font-mono);
+  color:var(--text);
+  font-weight:600;
+  text-align:right;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
 
 #upload-zone{
   margin:0;
@@ -1338,6 +1366,10 @@ body.sidebar-collapsed #sidebar{ display:none; }
     </div>
 
     <div id="settings-panel" style="display:none;">
+      <div id="data-source-indicator">
+        <span class="ds-label">Aktive Datenquelle</span>
+        <span id="data-source-name">–</span>
+      </div>
       <div id="upload-zone">
         <svg class="up-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1777,7 +1809,7 @@ function featuresFromGeoJson(gj){
   }).filter(Boolean);
 }
 
-function loadFeaturesIntoApp(features, sourceLabel){
+function loadFeaturesIntoApp(features, sourceLabel, showToast){
   if (!features.length){
     setStatus('Datei gelesen, aber keine Punkte gefunden.', 'err');
     return;
@@ -1789,7 +1821,11 @@ function loadFeaturesIntoApp(features, sourceLabel){
   populateFilterOptions();
   applyFilters();
   fitToFeatures();
-  if (sourceLabel) setStatus(features.length + ' Anlagen aus "' + sourceLabel + '" geladen.', 'ok');
+  if (sourceLabel){
+    var dsEl = document.getElementById('data-source-name');
+    if (dsEl) dsEl.textContent = sourceLabel;
+  }
+  if (showToast && sourceLabel) setStatus(features.length + ' Anlagen aus "' + sourceLabel + '" geladen.', 'ok');
 }
 
 function populateFilterOptions(){
@@ -1951,16 +1987,21 @@ function renderStats(){
   document.getElementById('stat-ocit').textContent = ocitCount + '/' + total;
 
   var ages = [];
-  var now = Date.now();
-  var MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
+  var today = new Date();
   state.features.forEach(function(f){
     var d = getGeraetDatum(f.props);
     if (!d || d === '-') return;
     var m = /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/.exec(String(d));
     if (!m) return;
-    var dt = new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
+    var y = parseInt(m[1],10), mo = parseInt(m[2],10), da = parseInt(m[3],10);
+    var dt = new Date(y, mo-1, da);
     if (isNaN(dt.getTime())) return;
-    var age = (now - dt.getTime()) / MS_PER_YEAR;
+    // "Geburtstagsrechnung": whole years since the date, only counting a
+    // year once that anniversary (month/day) has actually passed - same
+    // logic as calculating a person's age from their birthdate.
+    var age = today.getFullYear() - y;
+    var beforeAnniversary = (today.getMonth() < (mo-1)) || (today.getMonth() === (mo-1) && today.getDate() < da);
+    if (beforeAnniversary) age -= 1;
     if (age >= 0 && age < 150) ages.push(age);
   });
   document.getElementById('stat-age').textContent = ages.length
@@ -2354,7 +2395,7 @@ function handleFiles(fileList){
   if (gpkgFile){
     setStatus('Lese GeoPackage „' + gpkgFile.name + '“ …', 'busy');
     readAsArrayBuffer(gpkgFile).then(parseGpkg).then(function(feats){
-      loadFeaturesIntoApp(feats, gpkgFile.name);
+      loadFeaturesIntoApp(feats, gpkgFile.name, true);
     }).catch(function(err){
       console.error(err);
       setStatus('Fehler beim Lesen der GeoPackage-Datei: ' + err.message, 'err');
@@ -2367,7 +2408,7 @@ function handleFiles(fileList){
     readAsText(geojsonFile).then(function(text){
       var gj = JSON.parse(text);
       var feats = featuresFromGeoJsonReprojecting(gj);
-      loadFeaturesIntoApp(feats, geojsonFile.name);
+      loadFeaturesIntoApp(feats, geojsonFile.name, true);
     }).catch(function(err){
       console.error(err);
       setStatus('Fehler beim Lesen der Datei: ' + err.message, 'err');
@@ -2378,7 +2419,7 @@ function handleFiles(fileList){
   if (zipFile){
     setStatus('Lese Shapefile-Archiv „' + zipFile.name + '“ …', 'busy');
     readAsArrayBuffer(zipFile).then(parseShapefileZip).then(function(feats){
-      loadFeaturesIntoApp(feats, zipFile.name);
+      loadFeaturesIntoApp(feats, zipFile.name, true);
     }).catch(function(err){
       console.error(err);
       setStatus('Fehler beim Lesen des ZIP-Archivs: ' + err.message, 'err');
@@ -2403,7 +2444,7 @@ function handleFiles(fileList){
         var feats = parseShpDbfBuffers(res[0], res[1], res[2]);
         var label = 'Shapefile (.shp/.dbf' + (res[2] ? '/.prj' : '') + ')';
         pendingShapeParts = {};
-        loadFeaturesIntoApp(feats, label);
+        loadFeaturesIntoApp(feats, label, true);
       }catch(err){
         console.error(err);
         setStatus('Fehler beim Verarbeiten der Shapefile-Dateien: ' + err.message, 'err');
@@ -2499,7 +2540,7 @@ function setupSwipeGestures(){
 // needed), then data.geojson, then falls back to the embedded snapshot.
 // All same-origin fetches - no CORS issues since it's served alongside
 // this HTML file.
-function loadCentralData(onSuccess, statusLabel){
+function loadCentralData(onSuccess, showToast){
   fetch('data.gpkg', {cache: 'no-store'})
     .then(function(r){
       if (!r.ok) throw new Error('not found');
@@ -2508,7 +2549,7 @@ function loadCentralData(onSuccess, statusLabel){
     .then(parseGpkg)
     .then(function(feats){
       if (!feats.length) throw new Error('data.gpkg enthält keine Punkte');
-      onSuccess(feats, statusLabel ? 'data.gpkg' : null);
+      onSuccess(feats, 'data.gpkg', showToast);
     })
     .catch(function(){
       fetch('data.geojson', {cache: 'no-store'})
@@ -2519,14 +2560,14 @@ function loadCentralData(onSuccess, statusLabel){
         .then(function(gj){
           var feats = featuresFromGeoJson(gj);
           if (!feats.length) throw new Error('data.geojson enthält keine Punkte');
-          onSuccess(feats, statusLabel ? 'data.geojson' : null);
+          onSuccess(feats, 'data.geojson', showToast);
         })
         .catch(function(err){
-          if (statusLabel){
+          if (showToast){
             console.error(err);
             setStatus('Weder data.gpkg noch data.geojson erreichbar, zeige eingebettete Standarddaten.', 'err');
           }
-          onSuccess(featuresFromGeoJson(EMBEDDED_DATA), statusLabel ? 'Standarddaten (eingebettet)' : null);
+          onSuccess(featuresFromGeoJson(EMBEDDED_DATA), 'Standarddaten (eingebettet)', showToast);
         });
     });
 }
