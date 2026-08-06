@@ -1,6 +1,6 @@
 {
 "type": "FeatureCollection",
-"name": "LSA-08-26",
+"name": "Data",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::25832" } },
 "features": [
 { "type": "Feature", "properties": { "No.": 93.0, "-Kreuzung": "Göttinger Chaussee / Tillystraße / Unter den Birken mit TK Schnabelstraße", "-Bezirk": "9", "-Art": "K", "-TK": "2", "-dv. FSA": "0", "-dv. 2-feld.": "0", "-VSR": "4", "-OCIT": "Kabel", "-LSA-Datum": "2023/08/22", "-Hersteller": "Swarco", "-Gerät": "Actros", "-CKR-Nr.": "-", "-LED": "LED", "-BS": "BTAO", "-Nachtab.": "-", "-Gerät-Datum": "2023-08-22", "-SB": "Lipp", "-AP": "Ja", "-FG-Bem.": "-", "-VeloR.": "-", "-Bemerkung": null }, "geometry": { "type": "MultiPoint", "coordinates": [ [ 548849.441, 5798951.554999999701977 ] ] } },
